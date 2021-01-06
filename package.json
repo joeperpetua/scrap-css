@@ -1,0 +1,15 @@
+{
+  "name": "scrape-css",
+  "version": "1.0.0",
+  "description": "Web scrapper for CSS portal",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Joel Perpetua",
+  "license": "ISC",
+  "dependencies": {
+    "nodemon": "^2.0.7",
+    "puppeteer": "^5.5.0"
+  }
+}
