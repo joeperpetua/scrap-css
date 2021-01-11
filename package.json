@@ -1,15 +1,14 @@
 {
-  "name": "scrape-css",
-  "version": "1.0.0",
+  "name": "test",
+  "version": "0.0.1",
   "description": "Web scrapper for CSS portal",
-  "main": "server.js",
+  "main": "index.html",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "C:/Users/joelp/Desktop/proj/Dev-Libs/nwjs-sdk-v0.50.2-win-x64/nw ."
   },
   "author": "Joel Perpetua",
   "license": "ISC",
   "dependencies": {
-    "nodemon": "^2.0.7",
     "puppeteer": "^5.5.0"
   }
 }

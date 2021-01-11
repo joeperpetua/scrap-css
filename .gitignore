@@ -1,3 +1,4 @@
 /node_modules
-credentials.js
-
+/modules/credentials-fr.js
+/modules/teams-fr.js
+test.json
