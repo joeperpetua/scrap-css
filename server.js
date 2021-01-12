@@ -9,7 +9,7 @@ const date = {
 
 
 (async () => {
-    const browser = await puppeteer.launch({headless: false});
+    const browser = await puppeteer.launch({headless: true});
     const page = await browser.newPage();
     await page.goto(`https://cssnew.synology.com/statistics/ticket/supAgentStatsByLevel?group=FR+Level+1&groupid=1000013&level=1&fromdate=${date.month}%2F${date.day}%2F${date.year}&todate=${date.month}%2F${date.day}%2F${date.year}`, {
         timeout: 0
@@ -95,39 +95,47 @@ const date = {
             team: ''
         }; 
 
-        // check if user is in backup team
-        for (let j = 0; j < teams.backup.length; j++) {
-            if (teams.backup[i] === user.name) {
-                user.team = 'backup';
-            }
-        }
+        // iterate all groups and assign corresponding team
+        for (let team = 0; team < teams.length; team++) {
 
-        // check if user is in dr team
-        for (let j = 0; j < teams.dr.length; j++) {
-            if (teams.dr[i] === user.name) {
-                user.team = 'dr';
-            }
-        }
+            for (let member = 0; member < teams[team].length; member++) {
 
-        // check if user is in media team
-        for (let j = 0; j < teams.media.length; j++) {
-            if (teams.media[i] === user.name) {
-                user.team = 'media';
-            }
-        }
+                // console.log(`comparing -- ${user.name} --> ${teams[team][member]}`);
 
-        // check if user is in network team
-        for (let j = 0; j < teams.network.length; j++) {
-            if (teams.network[i] === user.name) {
-                user.team = 'network';
-            }
-        }
+                if (teams[team][member] == user.name) {
 
-        // check if user is in manager team
-        for (let j = 0; j < teams.manager.length; j++) {
-            if (teams.manager[i] === user.name) {
-                user.team = 'manager';
+                    // console.log('matched');
+
+                    switch (team) {
+                        case 0:
+                            user.team = 'backup';
+                            break;
+
+                        case 1:
+                            user.team = 'dr';
+                            break;
+
+                        case 2:
+                            user.team = 'media';
+                            break;
+
+                        case 3:
+                            user.team = 'network';
+                            break;
+
+                        case 4:
+                            user.team = 'manager';
+                            break;
+
+                        default:
+                            console.log('unknown team', team);
+                            break;
+                    }
+
+                }
+                
             }
+
         }
 
         users.push(user);

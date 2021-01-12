@@ -4,16 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>App</title>
+    <link rel="stylesheet" href="css/uikit.min.css" />
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/uikit.min.js"></script>
+    <script src="js/uikit-icons.min.js"></script>
 </head>
 <body>
     <script>
         var win = nw.Window.get();
         win.showDevTools();
     </script>
-    <h1>test</h1>
+
+    <form class="login">
+        <h1 class="uk-text-lead">Enter CSS credentials</h1>
+        <div class="uk-margin">
+            <div class="uk-inline">
+                <span class="uk-form-icon" uk-icon="icon: user"></span>
+                <input class="uk-input" type="text">
+            </div>
+        </div>
+
+        <div class="uk-margin">
+            <div class="uk-inline">
+                <span class="uk-form-icon uk-form-icon-flip" uk-icon="icon: lock"></span>
+                <input class="uk-input" type="password">
+            </div>
+        </div>
+        <input class="uk-input" type="date">
+
+        <button type="button" onclick="start()" class="uk-button uk-button-primary">Login</button>
+    </form>
+
 
     <div id="render"></div>
 
-    <script src="server.js"></script>
+    <!-- <script src="server.js"></script> -->
 </body>
 </html>

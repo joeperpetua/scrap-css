@@ -1,0 +1,15 @@
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+.login{
+    width: fit-content;
+    margin: 5% auto;
+}
+
+.login h1, .login button{
+    display: block;
+    width: fit-content;
+    margin: 0 auto;
+}
