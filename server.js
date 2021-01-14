@@ -1,22 +1,25 @@
 const puppeteer = require('puppeteer');
-const credentials = require('modules/credentials-fr.js');
 const teams = require('modules/teams-fr.js');
-const date = {
-    day: '05',
-    month: '01',
-    year: '2021'
-};
 
+let credentials = {username: '', password: ''};
+let date = {day: '', month: '', year: ''};
+
+// lazy load puppeteer
+let browser;
+let page;
+let loginButton;
+let newPagePromise;
+let loginPopup;
 
 (async () => {
-    const browser = await puppeteer.launch({headless: true});
-    const page = await browser.newPage();
-    await page.goto(`https://cssnew.synology.com/statistics/ticket/supAgentStatsByLevel?group=FR+Level+1&groupid=1000013&level=1&fromdate=${date.month}%2F${date.day}%2F${date.year}&todate=${date.month}%2F${date.day}%2F${date.year}`, {
+    browser = await puppeteer.launch({headless: false});
+    page = await browser.newPage();
+    await page.goto(`https://cssnew.synology.com/`, {
         timeout: 0
     });
 
     // get login button and click it
-    const loginButton = await page.$('#sso > button');
+    loginButton = await page.$('#sso > button');
     
     if (loginButton) {
         console.log('Login button found');
@@ -26,8 +29,17 @@ const date = {
     }
 
     // wait for popup
-    const newPagePromise = new Promise(x => browser.once('targetcreated', target => x(target.page()))); 
-    const loginPopup = await newPagePromise;
+    newPagePromise = new Promise(x => browser.once('targetcreated', target => x(target.page()))); 
+    loginPopup = await newPagePromise;
+
+    document.getElementById('loginButton').removeAttribute("disabled");
+})();
+
+
+// start login
+let start = async () => {
+    console.log('run');
+    getData();
 
     // get username field and click it, then write
     await loginPopup.waitForSelector('#dsm-user-fieldset > div > div.input-container > input[type=text]')
@@ -70,12 +82,17 @@ const date = {
         // click enter
         loginPopup.waitForTimeout(500);
         await loginPopup.keyboard.press('Enter');
+
+
     }else{
         console.log('Password input not found');
     }
 
     // wait for main page redirection after login
     await page.waitForNavigation({'waitUntil':'domcontentloaded'});
+    await page.goto(`https://cssnew.synology.com/statistics/ticket/supAgentStatsByLevel?group=FR+Level+1&groupid=1000013&level=1&fromdate=${date.month}%2F${date.day}%2F${date.year}&todate=${date.month}%2F${date.day}%2F${date.year}`, {
+        timeout: 0
+    });
 
     let responseString = await page.$eval('body > pre', el => el.innerText).catch(e => {
         console.log('error getting response selector',e);
@@ -86,6 +103,7 @@ const date = {
     let users = [];
     let formatResponse = response.agentdata.email_and_replycount;
 
+    // initialize users 
     for (let i = 0; i < formatResponse.length; i++) { 
         let user =  {
             name: formatResponse[i].username,
@@ -142,6 +160,7 @@ const date = {
         console.log(user);
     }
 
+    // render response
     for (let i = 0; i < users.length; i++) {
         document.getElementById('render').innerHTML += `
             <p>${users[i].name}</p>
@@ -155,5 +174,17 @@ const date = {
     
     
     // await browser.close();
+}
 
-  })();
+let getData = () => {
+    credentials.username = document.getElementById('username').value;
+    credentials.password = document.getElementById('password').value;
+
+    let dateArray = document.getElementById('date').value.split('-');
+
+    date.year = dateArray[0];
+    date.month = dateArray[1];
+    date.day = dateArray[2];
+    
+    console.log('data initialized');
+}

@@ -4,7 +4,8 @@
   "description": "Web scrapper for CSS portal",
   "main": "index.html",
   "scripts": {
-    "test": "C:/Users/joel/Desktop/projects/Dev-Libs/nwjs-sdk-v0.50.3-win-x64/nw ."
+    "test-office": "C:/Users/joel/Desktop/projects/Dev-Libs/nwjs-sdk-v0.50.3-win-x64/nw .",
+    "test": "C:/Users/joelp/Desktop/proj/Dev-Libs/nwjs-sdk-v0.50.2-win-x64/nw ."
   },
   "author": "Joel Perpetua",
   "license": "ISC",

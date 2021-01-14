@@ -15,29 +15,29 @@
         win.showDevTools();
     </script>
 
-    <form class="login">
+    <form class="login" id="login">
         <h1 class="uk-text-lead">Enter CSS credentials</h1>
         <div class="uk-margin">
             <div class="uk-inline">
                 <span class="uk-form-icon" uk-icon="icon: user"></span>
-                <input class="uk-input" type="text">
+                <input class="uk-input" id="username" type="text">
             </div>
         </div>
 
         <div class="uk-margin">
             <div class="uk-inline">
                 <span class="uk-form-icon uk-form-icon-flip" uk-icon="icon: lock"></span>
-                <input class="uk-input" type="password">
+                <input class="uk-input" id="password" type="password">
             </div>
         </div>
-        <input class="uk-input" type="date">
+        <input class="uk-input" id="date" type="date">
 
-        <button type="button" onclick="start()" class="uk-button uk-button-primary">Login</button>
+        <button type="button" onclick="start()" class="uk-button uk-button-primary" id="loginButton" disabled>Login</button>
     </form>
 
 
-    <div id="render"></div>
+    <div id="render" class="render"></div>
 
-    <!-- <script src="server.js"></script> -->
+    <script src="server.js"></script>
 </body>
 </html>
