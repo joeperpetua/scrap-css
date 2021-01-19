@@ -15,6 +15,7 @@
         win.showDevTools();
     </script>
 
+
     <form class="login" id="login">
         <h1 class="uk-text-lead">Enter CSS credentials</h1>
         <div class="uk-margin">
@@ -30,9 +31,21 @@
                 <input class="uk-input" id="password" type="password">
             </div>
         </div>
-        <input class="uk-input" id="date" type="date">
 
-        <button type="button" onclick="start()" class="uk-button uk-button-primary" id="loginButton" disabled>Login</button>
+        <div class="uk-margin">
+            <div class="uk-inline uk-width-expand">
+                <input class="uk-input" id="date" type="date">
+            </div>
+        </div>
+        
+        <div class="uk-margin">
+            <div id="login-spinner" class="margin-center" uk-spinner></div>
+            <p class="margin-center tooltip" id="loading-text"></p>
+            <button type="button" onclick="start()" class="uk-button uk-button-primary" id="loginButton" hidden>Login</button>
+        </div>
+        
+        
+        
     </form>
 
 

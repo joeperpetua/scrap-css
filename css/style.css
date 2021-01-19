@@ -3,6 +3,16 @@ html, body {
     padding: 0;
 }
 
+.margin-center {
+    margin: 0 auto;
+    width: fit-content;
+    display: block;
+}
+
+.tooltip {
+    max-width: 100%;
+}
+
 .login {
     width: fit-content;
     margin: 5% auto;
@@ -20,3 +30,4 @@ html, body {
     align-items: center;
     justify-content: center;
 }
+
