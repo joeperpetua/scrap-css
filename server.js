@@ -53,7 +53,12 @@ let start = async () => {
     loadTooltip.hidden = false;
     loginFormButton.hidden = true;
     
-    getData();
+    await getData();
+    
+    if(await validateData() === false){
+        return null
+    }
+
 
     if(!useCache){
         // get username field and click it, then write
@@ -87,7 +92,7 @@ let start = async () => {
         
 
         // get username field and click it, then write
-        await loginPopup.waitForSelector('#dsm-pass-fieldset > div.login-textfield.password-field.field > div.input-container > input[type=password]')
+        await loginPopup.waitForSelector('#dsm-pass-fieldset > div.login-textfield.password-field.field > div.input-container > input[type=password]');
         const passwordInput = await loginPopup.$('#dsm-pass-fieldset > div.login-textfield.password-field.field > div.input-container > input[type=password]');
         
         if (passwordInput) {
@@ -102,6 +107,29 @@ let start = async () => {
             loginPopup.waitForTimeout(500);
             await loginPopup.keyboard.press('Enter');
 
+            loadTooltip.innerText = 'Authenticating...';
+
+            let goodCredentials = await loginPopup.waitForSelector(
+                '#sds-login-vue-inst > div > div.login-container > div.login-tab-panel > div > div.tab-wrapper > div.tab-content-ct > div > div.login-content-section > div.login-remain-section > div',
+                {visible: true, timeout: 8000}
+            ).then(
+                () => {return false}
+            ).catch((e)=>{
+                console.log(typeof e.message);
+                if(e.message.includes('Target closed')){
+                    return true;
+                }
+            });
+
+            console.log(goodCredentials);
+
+            if(!goodCredentials){
+                await loginPopup.reload();
+                loadTooltip.innerText = 'Username or password incorrect. Please try again.';
+                spinner.hidden = true;
+                loginFormButton.hidden = false;
+                return null
+            }
 
         }else{
             console.log('Password input not found');
@@ -213,7 +241,7 @@ let start = async () => {
     // await browser.close();
 }
 
-let getData = () => {
+let getData = async () => {
     credentials.username = document.getElementById('username').value;
     credentials.password = document.getElementById('password').value;
 
@@ -224,6 +252,24 @@ let getData = () => {
     date.day = dateArray[2];
     
     console.log('data initialized');
+}
+
+let validateData = async () => {
+    if(date.day === undefined || date.month === undefined || date.year === undefined){
+        loadTooltip.innerText = 'Please choose a valid date to continue.';
+        spinner.hidden = true;
+        loginFormButton.hidden = false;
+        return false;
+    }
+
+    if(credentials.username === '' || credentials.password === ''){
+        loadTooltip.innerText = 'Please enter a valid username/password to continue.';
+        spinner.hidden = true;
+        loginFormButton.hidden = false;
+        return false;
+    }
+
+    return true;
 }
 
 let refresh = () => {
