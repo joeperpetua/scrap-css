@@ -18,7 +18,7 @@ let loginForm = document.getElementById('login');
 
 (async () => {
     loadTooltip.innerText = 'Connecting to server...'
-    browser = await puppeteer.launch({headless: false});
+    browser = await puppeteer.launch({headless: true});
     page = await browser.newPage();
     await page.goto(`https://cssnew.synology.com/`, {
         timeout: 0
@@ -220,23 +220,7 @@ let start = async () => {
     loadTooltip.hidden = true;
     loginForm.hidden = true;
 
-    document.getElementById('render').innerHTML = `
-        <button type="button" onclick="refresh()" class="uk-button uk-button-primary">Change date</button>
-    `;
-    
-
-    // render response
-    for (let i = 0; i < users.length; i++) {
-        document.getElementById('render').innerHTML += `
-            <p>${users[i].name}</p>
-            <p>${users[i].mailSent}</p>
-            <p>${users[i].firstReply}</p>
-            <p>${users[i].team}</p>
-            <hr>
-        `;
-    }
-
-    
+    render(users);
     
     // await browser.close();
 }
@@ -277,4 +261,83 @@ let refresh = () => {
     loginForm.hidden = false;
     loginFormButton.hidden = false;
     document.getElementById('render').innerHTML = '';
+}
+
+let render = (users) => {
+    let content = document.getElementById('render');
+
+    content.innerHTML = `
+        <button type="button" onclick="refresh()" class="uk-button uk-button-primary">Change date</button>
+    `;
+
+    let tableTemplate = `
+        <table style="border: 2px solid lightgray; border-collapse: collapse; overflow-wrap: break-word; width: 1005px; height: 470px; table-layout: fixed;">
+            <colgroup class="" syno-mc-class="mce-col-group">
+                <col style="width: 174px;">
+                <col style="width: 125px;">
+                <col style="width: 179px;">
+                <col style="width: 161px;">
+                <col style="width: 366px;">
+            </colgroup>
+            <tbody>
+                <tr style="height: 29px;">
+                    <td style="border: 2px solid lightgray; overflow: hidden; width: 174px; height: 29px; text-align: center;">
+                        <div><span style="background-color: #ffffff;">Name</span></div>
+                    </td>
+                    <td style="border: 2px solid lightgray; overflow: hidden; width: 125px; height: 29px; text-align: center;">
+                        <div><span style="background-color: #ffffff;">Mail Sent</span></div>
+                    </td>
+                    <td style="border: 2px solid lightgray; overflow: hidden; width: 179px; height: 29px; text-align: center;">
+                        <div><span style="background-color: #ffffff;">First answers</span></div>
+                    </td>
+                    <td style="border: 2px solid lightgray; overflow: hidden; width: 161px; height: 29px; text-align: center;">
+                        <div><span style="background-color: #ffffff;">Target</span></div>
+                    </td>
+                    <td style="border: 2px solid lightgray; overflow: hidden; width: 366px; height: 29px; text-align: center;">
+                        <div><span style="background-color: #ffffff;">Reason of difficulties</span></div>
+                    </td>
+                </tr>
+    `;
+
+    let tableCode = ``;
+
+    // render response
+    for (let i = 0; i < users.length; i++) {
+
+        tableTemplate += `
+            <tr style="height: 25px;">
+                <td style="border: 2px solid lightgray; overflow: hidden; width: 174px; height: 25px; text-align: center;">
+                    <div><span style="background-color: #ffffff;">${users[i].name}</span></div>
+                </td>
+                <td style="border: 2px solid lightgray; overflow: hidden; width: 125px; height: 25px; text-align: center;">${users[i].mailSent}</td>
+                <td style="border: 2px solid lightgray; overflow: hidden; width: 179px; height: 25px; text-align: center;">${users[i].firstReply}</td>
+                <td style="border: 2px solid lightgray; overflow: hidden; width: 161px; height: 25px; text-align: center;">${users[i].target}</td>
+                <td style="border: 2px solid lightgray; overflow: hidden; width: 366px; height: 25px; text-align: center;"><span style="background-color: #ffffff;">Home Office</span></td>
+            </tr>
+        `;
+    }
+
+    tableTemplate += `
+            </tbody>
+        </table>
+    `;
+
+    tableCode = tableTemplate;
+
+    tableCode = tableCode.replace(/\</g, '&lt');
+    tableCode = tableCode.replace(/\>/g, '&gt');
+
+    tableCode = `document.querySelector('#mceu_30').firstElementChild.contentDocument.querySelector('#tinymce').innerHTML = \`${tableCode}\`;`;
+
+    content.innerHTML += `
+        <h1>Daily report preview for ${date.day}/${date.month}/${date.year}</h1>
+        <div class="margin-center">${tableTemplate}</div>
+
+        <h1>Table code</h1>
+        <pre>
+            <code>${tableCode}</code>
+        </pre>
+    `;
+
+    
 }
