@@ -14,14 +14,21 @@ let useCache = false;
 let loadTooltip = document.getElementById('loading-text');
 let spinner = document.getElementById('login-spinner');
 let loginFormButton = document.getElementById('loginButton');
+let reloadFormButton = document.getElementById('reloadButton');
 let loginForm = document.getElementById('login');
 
 (async () => {
     loadTooltip.innerText = 'Connecting to server...'
     browser = await puppeteer.launch({headless: true});
     page = await browser.newPage();
-    await page.goto(`https://cssnew.synology.com/`, {
-        timeout: 0
+
+    await page.goto(`https://cssnew.synology.com/`).catch((e) => {
+        console.log('Page Goto error handler: ', e.message);
+        if(e.message === 'Navigation timeout of 30000 ms exceeded'){
+            loadTooltip.innerHTML = 'Timeout error. <br>Check network or try again later.';
+            spinner.hidden = true;
+            reloadFormButton.hidden = false;
+        }
     });
 
     // get login button and click it
@@ -156,6 +163,7 @@ let start = async () => {
     let response = await JSON.parse(responseString);
     let users = [];
     let formatResponse = response.agentdata.email_and_replycount;
+    let workingCount = 0;
 
     // initialize users 
     for (let i = 0; i < formatResponse.length; i++) { 
@@ -166,6 +174,10 @@ let start = async () => {
             target: '',
             team: ''
         }; 
+
+        if(formatResponse[i].username != 'FR Level 1' && formatResponse[i].replycount > 3){
+            workingCount++;
+        }
 
         // iterate all groups and assign corresponding team
         for (let team = 0; team < teams.length; team++) {
@@ -212,6 +224,15 @@ let start = async () => {
 
         users.push(user);
         console.log(user);
+    }
+
+    // set suggested target, start from 1 to ignore FR Team user
+    for (let i = 1; i < users.length; i++) {
+        if(users[i].firstReply > 3){
+            users[i].target = (users[0].firstReply / workingCount).toFixed(2);
+        }else{
+            users[i].target = 0;
+        }
     }
 
 
@@ -263,11 +284,18 @@ let refresh = () => {
     document.getElementById('render').innerHTML = '';
 }
 
+let copyCode = () => {
+    let tableCopy = document.getElementById('table-code');
+    var clipboard = nw.Clipboard.get();
+    clipboard.set(tableCopy.value, 'text');
+    alert("Copied!");
+}
+
 let render = (users) => {
     let content = document.getElementById('render');
 
     content.innerHTML = `
-        <button type="button" onclick="refresh()" class="uk-button uk-button-primary">Change date</button>
+        <button type="button" onclick="refresh()" class="uk-button uk-button-primary" style="margin-top: 20px">Change date</button>
     `;
 
     let tableTemplate = `
@@ -291,7 +319,7 @@ let render = (users) => {
                         <div><span style="background-color: #ffffff;">First answers</span></div>
                     </td>
                     <td style="border: 2px solid lightgray; overflow: hidden; width: 161px; height: 29px; text-align: center;">
-                        <div><span style="background-color: #ffffff;">Target</span></div>
+                        <div><span style="background-color: #ffffff;">Suggested Target</span></div>
                     </td>
                     <td style="border: 2px solid lightgray; overflow: hidden; width: 366px; height: 29px; text-align: center;">
                         <div><span style="background-color: #ffffff;">Reason of difficulties</span></div>
@@ -334,9 +362,20 @@ let render = (users) => {
         <div class="margin-center">${tableTemplate}</div>
 
         <h1>Table code</h1>
-        <pre>
-            <code>${tableCode}</code>
-        </pre>
+        <button type="button" onclick="copyCode()" class="uk-button uk-button-primary">Copy code</button>
+        <ul uk-accordion>
+            <li>
+                <a class="uk-accordion-title" href="#">See code</a>
+                <div class="uk-accordion-content">
+                    <pre>
+                        <code>${tableCode}</code>
+                    </pre>
+                </div>
+            </li>
+        </ul>
+
+
+        <textarea id='table-code' hidden>${tableCode}</textarea>
     `;
 
     

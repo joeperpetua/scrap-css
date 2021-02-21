@@ -10,7 +10,9 @@ html, body {
 }
 
 .tooltip {
-    max-width: 100%;
+    max-width: 200px;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
 .login {
