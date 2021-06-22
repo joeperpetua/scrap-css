@@ -69,87 +69,8 @@ let start = async () => {
     
 
     if(!useCache){
-        // get username field and click it, then write
-        await loginPopup.waitForSelector('#dsm-user-fieldset > div > div > div.input-container > input[type=text]')
-        const usernameInput = await loginPopup.$('#dsm-user-fieldset > div > div > div.input-container > input[type=text]');
-        
-        if (usernameInput) {
-            console.log('Username input found');
-            loadTooltip.innerText = 'Username input found...';
-            await loginPopup.focus('#dsm-user-fieldset > div > div > div.input-container > input[type=text]');
-            await loginPopup.click('#dsm-user-fieldset > div > div > div.input-container > input[type=text]');
-            loginPopup.waitForTimeout(1000);
-            // console.log(credentials.username);
-            await loginPopup.keyboard.type(credentials.username);
-        }else{
-            console.log('Username input not found');
-            loadTooltip.innerText = 'Username input not found...';
-        }
-
-
-        // get next button and click it
-        const nextButton = await loginPopup.$('#sds-login-vue-inst > div > span > div > div.login-body-section > div.login-tab-panel > div > div.tab-wrapper > div.tab-content-ct > div > div.login-content-section > div.login-btn > div.login-btn-spinner-wrapper > svg');
-        
-        if (nextButton) {
-            console.log('Next button found');
-            await loginPopup.click('#sds-login-vue-inst > div > span > div > div.login-body-section > div.login-tab-panel > div > div.tab-wrapper > div.tab-content-ct > div > div.login-content-section > div.login-btn > div.login-btn-spinner-wrapper > svg');
-        }else{
-            console.log('Next button not found');
-            loadTooltip.innerText = 'Next button not found...';
-        }
-        
-
-        // get username field and click it, then write
-        await loginPopup.waitForSelector('#dsm-pass-fieldset > div.login-textfield-wrapper.password-field.field > div > div.input-container > input[type=password]');
-        const passwordInput = await loginPopup.$('#dsm-pass-fieldset > div.login-textfield-wrapper.password-field.field > div > div.input-container > input[type=password]');
-        
-        if (passwordInput) {
-            console.log('Password input found');
-            loadTooltip.innerText = 'Password input found...';
-            await loginPopup.focus('#dsm-pass-fieldset > div.login-textfield-wrapper.password-field.field > div > div.input-container > input[type=password]');
-            await loginPopup.click('#dsm-pass-fieldset > div.login-textfield-wrapper.password-field.field > div > div.input-container > input[type=password]');
-            // console.log(credentials.username);
-            loginPopup.waitForTimeout(1000);
-            await loginPopup.keyboard.type(credentials.password);
-            // click enter
-            loginPopup.waitForTimeout(500);
-            await loginPopup.keyboard.press('Enter');
-
-            loadTooltip.innerText = 'Authenticating...';
-
-            let goodCredentials = await loginPopup.waitForSelector(
-                '#sds-login-vue-inst > div > span > div > div.login-body-section > div.login-tab-panel > div > div.tab-wrapper > div.tab-content-ct > div > div.login-content-section > div.login-remain-section > div',
-                {visible: true, timeout: 8000}
-            ).then(
-                () => {return false}
-            ).catch((e)=>{
-                console.log(typeof e.message);
-                if(e.message.includes('Target closed')){
-                    return true;
-                }
-            });
-
-            console.log(goodCredentials);
-
-            if(!goodCredentials){
-                await loginPopup.reload();
-                loadTooltip.innerText = 'Username or password incorrect. Please try again.';
-                spinner.hidden = true;
-                loginFormButton.hidden = false;
-                return null
-            }
-
-        }else{
-            console.log('Password input not found');
-            loadTooltip.innerText = 'Password input not found...';
-        }
-
-        // wait for main page redirection after login
-        loadTooltip.innerText = 'Redirecting to CSS portal...';
-        await page.waitForNavigation({'waitUntil':'domcontentloaded'});
+        await automateLogin();
     }
-
-
 
 
     loadTooltip.innerText = `Waiting for API response for ${date.day}/${date.month}/${date.year}...`;
@@ -293,6 +214,194 @@ let copyCode = () => {
     alert("Copied!");
 }
 
+const automateLogin = async () => {
+    // get username field and click it, then write
+    await loginPopup.waitForSelector('#dsm-user-fieldset > div > div > div.input-container > input[type=text]')
+    const usernameInput = await loginPopup.$('#dsm-user-fieldset > div > div > div.input-container > input[type=text]');
+    
+    if (usernameInput) {
+        console.log('Username input found');
+        loadTooltip.innerText = 'Username input found...';
+        await loginPopup.focus('#dsm-user-fieldset > div > div > div.input-container > input[type=text]');
+        await loginPopup.click('#dsm-user-fieldset > div > div > div.input-container > input[type=text]');
+        loginPopup.waitForTimeout(1000);
+        // console.log(credentials.username);
+        await loginPopup.keyboard.type(credentials.username);
+    }else{
+        console.log('Username input not found');
+        loadTooltip.innerText = 'Username input not found...';
+    }
+
+
+    // get next button and click it
+    const nextButton = await loginPopup.$('#sds-login-vue-inst > div > span > div > div.login-body-section > div.login-tab-panel > div > div.tab-wrapper > div.tab-content-ct > div > div.login-content-section > div.login-btn > div.login-btn-spinner-wrapper > svg');
+    
+    if (nextButton) {
+        console.log('Next button found');
+        await loginPopup.click('#sds-login-vue-inst > div > span > div > div.login-body-section > div.login-tab-panel > div > div.tab-wrapper > div.tab-content-ct > div > div.login-content-section > div.login-btn > div.login-btn-spinner-wrapper > svg');
+    }else{
+        console.log('Next button not found');
+        loadTooltip.innerText = 'Next button not found...';
+    }
+    
+
+    // get username field and click it, then write
+    await loginPopup.waitForSelector('#dsm-pass-fieldset > div.login-textfield-wrapper.password-field.field > div > div.input-container > input[type=password]');
+    const passwordInput = await loginPopup.$('#dsm-pass-fieldset > div.login-textfield-wrapper.password-field.field > div > div.input-container > input[type=password]');
+    
+    if (passwordInput) {
+        console.log('Password input found');
+        loadTooltip.innerText = 'Password input found...';
+        await loginPopup.focus('#dsm-pass-fieldset > div.login-textfield-wrapper.password-field.field > div > div.input-container > input[type=password]');
+        await loginPopup.click('#dsm-pass-fieldset > div.login-textfield-wrapper.password-field.field > div > div.input-container > input[type=password]');
+        // console.log(credentials.username);
+        loginPopup.waitForTimeout(1000);
+        await loginPopup.keyboard.type(credentials.password);
+        // click enter
+        loginPopup.waitForTimeout(500);
+        await loginPopup.keyboard.press('Enter');
+
+        loadTooltip.innerText = 'Authenticating...';
+
+        let goodCredentials = await loginPopup.waitForSelector(
+            '#sds-login-vue-inst > div > span > div > div.login-body-section > div.login-tab-panel > div > div.tab-wrapper > div.tab-content-ct > div > div.login-content-section > div.login-remain-section > div',
+            {visible: true, timeout: 8000}
+        ).then(
+            () => {return false}
+        ).catch((e)=>{
+            console.log(typeof e.message);
+            if(e.message.includes('Target closed')){
+                return true;
+            }
+        });
+
+        console.log(goodCredentials);
+
+        if(!goodCredentials){
+            await loginPopup.reload();
+            loadTooltip.innerText = 'Username or password incorrect. Please try again.';
+            spinner.hidden = true;
+            loginFormButton.hidden = false;
+            return null
+        }
+
+    }else{
+        console.log('Password input not found');
+        loadTooltip.innerText = 'Password input not found...';
+    }
+
+    // wait for main page redirection after login
+    loadTooltip.innerText = 'Redirecting to CSS portal...';
+    await page.waitForNavigation({'waitUntil':'domcontentloaded'});
+};
+
+const openMail = async () => {
+    let browserMail = await puppeteer.launch({headless: false});
+    let pageMail = await browserMail.newPage();
+
+    await pageMail.goto(`https://mailplus.synology.com/`, {'waitUntil':'domcontentloaded'}).catch((e) => {
+        console.log('Page Goto error handler: ', e.message);
+        if(e.message === 'Navigation timeout of 30000 ms exceeded'){
+            loadTooltip.innerHTML = 'Timeout error. <br>Check network or try again later.';
+            spinner.hidden = true;
+            reloadFormButton.hidden = false;
+        }
+    });
+
+    // get login button and click it
+    let loginButtonMail = await pageMail.$('#login-btn');
+    
+    if (loginButtonMail) {
+        console.log('Login button found');
+        await pageMail.click('#login-btn');
+    }else{
+        console.log('Login button not found');
+    }
+
+    // wait for popup
+    let newPagePromiseMail = new Promise(x => browserMail.once('targetcreated', target => x(target.page()))); 
+    let loginPopupMail = await newPagePromiseMail;
+
+    // get username field and click it, then write
+    await loginPopupMail.waitForSelector('#dsm-user-fieldset > div > div > div.input-container > input[type=text]')
+    const usernameInput = await loginPopupMail.$('#dsm-user-fieldset > div > div > div.input-container > input[type=text]');
+    
+    if (usernameInput) {
+        console.log('Username input found');
+        loadTooltip.innerText = 'Username input found...';
+        await loginPopupMail.focus('#dsm-user-fieldset > div > div > div.input-container > input[type=text]');
+        await loginPopupMail.click('#dsm-user-fieldset > div > div > div.input-container > input[type=text]');
+        loginPopupMail.waitForTimeout(1000);
+        // console.log(credentials.username);
+        await loginPopupMail.keyboard.type(credentials.username);
+    }else{
+        console.log('Username input not found');
+        loadTooltip.innerText = 'Username input not found...';
+    }
+
+
+    // get next button and click it
+    const nextButton = await loginPopupMail.$('#sds-login-vue-inst > div > span > div > div.login-body-section > div.login-tab-panel > div > div.tab-wrapper > div.tab-content-ct > div > div.login-content-section > div.login-btn > div.login-btn-spinner-wrapper > svg');
+    
+    if (nextButton) {
+        console.log('Next button found');
+        await loginPopupMail.click('#sds-login-vue-inst > div > span > div > div.login-body-section > div.login-tab-panel > div > div.tab-wrapper > div.tab-content-ct > div > div.login-content-section > div.login-btn > div.login-btn-spinner-wrapper > svg');
+    }else{
+        console.log('Next button not found');
+        loadTooltip.innerText = 'Next button not found...';
+    }
+    
+
+    // get username field and click it, then write
+    await loginPopupMail.waitForSelector('#dsm-pass-fieldset > div.login-textfield-wrapper.password-field.field > div > div.input-container > input[type=password]');
+    const passwordInput = await loginPopupMail.$('#dsm-pass-fieldset > div.login-textfield-wrapper.password-field.field > div > div.input-container > input[type=password]');
+    
+    if (passwordInput) {
+        console.log('Password input found');
+        loadTooltip.innerText = 'Password input found...';
+        await loginPopupMail.focus('#dsm-pass-fieldset > div.login-textfield-wrapper.password-field.field > div > div.input-container > input[type=password]');
+        await loginPopupMail.click('#dsm-pass-fieldset > div.login-textfield-wrapper.password-field.field > div > div.input-container > input[type=password]');
+        // console.log(credentials.username);
+        loginPopupMail.waitForTimeout(1000);
+        await loginPopupMail.keyboard.type(credentials.password);
+        // click enter
+        loginPopupMail.waitForTimeout(500);
+        await loginPopupMail.keyboard.press('Enter');
+
+        loadTooltip.innerText = 'Authenticating...';
+
+        let goodCredentials = await loginPopupMail.waitForSelector(
+            '#sds-login-vue-inst > div > span > div > div.login-body-section > div.login-tab-panel > div > div.tab-wrapper > div.tab-content-ct > div > div.login-content-section > div.login-remain-section > div',
+            {visible: true, timeout: 8000}
+        ).then(
+            () => {return false}
+        ).catch((e)=>{
+            console.log(typeof e.message);
+            if(e.message.includes('Target closed')){
+                return true;
+            }
+        });
+
+        console.log(goodCredentials);
+
+        if(!goodCredentials){
+            await loginPopup.reload();
+            loadTooltip.innerText = 'Username or password incorrect. Please try again.';
+            spinner.hidden = true;
+            loginFormButton.hidden = false;
+            return null
+        }
+
+    }else{
+        console.log('Password input not found');
+        loadTooltip.innerText = 'Password input not found...';
+    }
+
+    // wait for main page redirection after login
+    loadTooltip.innerText = 'Redirecting to CSS portal...';
+    await page.waitForNavigation({'waitUntil':'domcontentloaded'});
+};
+
 let render = (users) => {
     let content = document.getElementById('render');
 
@@ -357,7 +466,28 @@ let render = (users) => {
     tableCode = tableCode.replace(/\</g, '&lt');
     tableCode = tableCode.replace(/\>/g, '&gt');
 
-    tableCode = `document.querySelector('#mceu_30').firstElementChild.contentDocument.querySelector('#tinymce').innerHTML = \`${tableCode}\`;`;
+    tableCode = `if(document.querySelector('#mceu_30')){
+                    document.querySelector('#mceu_30').firstElementChild.contentDocument.querySelector('#tinymce').innerHTML = \` 
+                    <div><br data-mce-bogus="1"></div>
+                    <div><br data-mce-bogus="1"></div>
+                    <div><br data-mce-bogus="1"></div>
+                    ${tableCode}
+                    <div><br data-mce-bogus="1"></div>
+                    <div><br data-mce-bogus="1"></div>
+                    <div><br data-mce-bogus="1"></div>
+                    \`;
+                }else{
+                    document.querySelector('#mceu_62').firstElementChild.contentDocument.querySelector('#tinymce').innerHTML = \` 
+                    <div><br data-mce-bogus="1"></div>
+                    <div><br data-mce-bogus="1"></div>
+                    <div><br data-mce-bogus="1"></div>
+                    ${tableCode}
+                    <div><br data-mce-bogus="1"></div>
+                    <div><br data-mce-bogus="1"></div>
+                    <div><br data-mce-bogus="1"></div>
+                    \`;
+                }
+        `;
 
     content.innerHTML += `
         <h1>Daily report preview for ${date.day}/${date.month}/${date.year}</h1>
@@ -365,6 +495,7 @@ let render = (users) => {
 
         <h1>Table code</h1>
         <button type="button" onclick="copyCode()" class="uk-button uk-button-primary">Copy code</button>
+        <button type="button" onclick="openMail()" class="uk-button uk-button-primary">Open mail</button>
         <ul uk-accordion>
             <li>
                 <a class="uk-accordion-title" href="#">See code</a>
