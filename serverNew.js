@@ -1,16 +1,9 @@
 const puppeteer = require('puppeteer');
 const teams = require('modules/teams-fr.js');
 
-let credentials = {username: '', password: ''};
 let date = {day: '', month: '', year: ''};
+let url = `https://cssnew.synology.com/statistics/ticket/supAgentStatsByLevel?group=FR+Level+1&groupid=1000013&level=1&fromdate=06%2F22%2F2021&todate=06%2F22%2F2021`;
 
-// lazy load puppeteer
-let browser;
-let page;
-let loginButton;
-let newPagePromise;
-let loginPopup;
-let useCache = false;
 let loadTooltip = document.getElementById('loading-text');
 let spinner = document.getElementById('login-spinner');
 let loginFormButton = document.getElementById('loginButton');
@@ -18,11 +11,33 @@ let reloadFormButton = document.getElementById('reloadButton');
 let loginForm = document.getElementById('login');
 
 (async () => {
-    loadTooltip.innerText = 'Connecting to server...'
-    browser = await puppeteer.launch({headless: true});
-    page = await browser.newPage();
 
-    await page.goto(`https://cssnew.synology.com/`).catch((e) => {
+    spinner.hidden = true;
+    loadTooltip.hidden = true;
+    loginFormButton.hidden = false;
+    
+})();
+
+
+// start login
+let start = async () => {
+    console.log('run');
+    spinner.hidden = false;
+    loadTooltip.innerText = `Loging into SSO...`;
+    loadTooltip.hidden = false;
+    loginFormButton.hidden = true;
+    
+    await getData();
+    
+    if(await validateData() === false){
+        return null
+    }
+
+    loadTooltip.innerText = `Waiting for API response for ${date.day}/${date.month}/${date.year}...`;
+
+    browser = await puppeteer.launch({headless: false});
+    page = await browser.newPage();
+    await page.goto(`https://cssnew.synology.com/statistics/ticket/supAgentStatsByLevel?group=FR+Level+1&groupid=1000013&level=1&fromdate=${date.month}%2F${date.day}%2F${date.year}&todate=${date.month}%2F${date.day}%2F${date.year}`, {timeout: 0}).catch((e) => {
         console.log('Page Goto error handler: ', e.message);
         if(e.message === 'Navigation timeout of 30000 ms exceeded'){
             loadTooltip.innerHTML = 'Timeout error. <br>Check network or try again later.';
@@ -31,138 +46,14 @@ let loginForm = document.getElementById('login');
         }
     });
 
-    // get login button and click it
-    loginButton = await page.$('#sso > button');
-    
-    if (loginButton) {
-        console.log('Login button found');
-        await page.click('#sso > button');
-    }else{
-        console.log('Login button not found');
-    }
-
-    // wait for popup
-    newPagePromise = new Promise(x => browser.once('targetcreated', target => x(target.page()))); 
-    loginPopup = await newPagePromise;
+    await page.waitForNavigation({'waitUntil': 'networkidle0', timeout: 0}).catch(e => console.log(e));
+    const element = await page.$("body");
+    const text = await page.evaluate(element => element.textContent, element); 
+    const response = JSON.parse(text);
+    console.log(response);
+    await browser.close();
     
 
-    spinner.hidden = true;
-    loadTooltip.hidden = true;
-    loginFormButton.hidden = false;
-})();
-
-
-// start login
-let start = async () => {
-    console.log('run');
-
-    await getData();
-    
-    if(await validateData() === false){
-        return null
-    }
-
-    spinner.hidden = false;
-    loadTooltip.innerText = `Loging in with credentials for ${credentials.username}...`;
-    loadTooltip.hidden = false;
-    loginFormButton.hidden = true;
-    
-
-    if(!useCache){
-        // get username field and click it, then write
-        await loginPopup.waitForSelector('#dsm-user-fieldset > div > div > div.input-container > input[type=text]')
-        const usernameInput = await loginPopup.$('#dsm-user-fieldset > div > div > div.input-container > input[type=text]');
-        
-        if (usernameInput) {
-            console.log('Username input found');
-            loadTooltip.innerText = 'Username input found...';
-            await loginPopup.focus('#dsm-user-fieldset > div > div > div.input-container > input[type=text]');
-            await loginPopup.click('#dsm-user-fieldset > div > div > div.input-container > input[type=text]');
-            loginPopup.waitForTimeout(1000);
-            // console.log(credentials.username);
-            await loginPopup.keyboard.type(credentials.username);
-        }else{
-            console.log('Username input not found');
-            loadTooltip.innerText = 'Username input not found...';
-        }
-
-
-        // get next button and click it
-        const nextButton = await loginPopup.$('#sds-login-vue-inst > div > span > div > div.login-body-section > div.login-tab-panel > div > div.tab-wrapper > div.tab-content-ct > div > div.login-content-section > div.login-btn > div.login-btn-spinner-wrapper > svg');
-        
-        if (nextButton) {
-            console.log('Next button found');
-            await loginPopup.click('#sds-login-vue-inst > div > span > div > div.login-body-section > div.login-tab-panel > div > div.tab-wrapper > div.tab-content-ct > div > div.login-content-section > div.login-btn > div.login-btn-spinner-wrapper > svg');
-        }else{
-            console.log('Next button not found');
-            loadTooltip.innerText = 'Next button not found...';
-        }
-        
-
-        // get username field and click it, then write
-        await loginPopup.waitForSelector('#dsm-pass-fieldset > div.login-textfield-wrapper.password-field.field > div > div.input-container > input[type=password]');
-        const passwordInput = await loginPopup.$('#dsm-pass-fieldset > div.login-textfield-wrapper.password-field.field > div > div.input-container > input[type=password]');
-        
-        if (passwordInput) {
-            console.log('Password input found');
-            loadTooltip.innerText = 'Password input found...';
-            await loginPopup.focus('#dsm-pass-fieldset > div.login-textfield-wrapper.password-field.field > div > div.input-container > input[type=password]');
-            await loginPopup.click('#dsm-pass-fieldset > div.login-textfield-wrapper.password-field.field > div > div.input-container > input[type=password]');
-            // console.log(credentials.username);
-            loginPopup.waitForTimeout(1000);
-            await loginPopup.keyboard.type(credentials.password);
-            // click enter
-            loginPopup.waitForTimeout(500);
-            await loginPopup.keyboard.press('Enter');
-
-            loadTooltip.innerText = 'Authenticating...';
-
-            let goodCredentials = await loginPopup.waitForSelector(
-                '#sds-login-vue-inst > div > span > div > div.login-body-section > div.login-tab-panel > div > div.tab-wrapper > div.tab-content-ct > div > div.login-content-section > div.login-remain-section > div',
-                {visible: true, timeout: 8000}
-            ).then(
-                () => {return false}
-            ).catch((e)=>{
-                console.log(typeof e.message);
-                if(e.message.includes('Target closed')){
-                    return true;
-                }
-            });
-
-            console.log(goodCredentials);
-
-            if(!goodCredentials){
-                await loginPopup.reload();
-                loadTooltip.innerText = 'Username or password incorrect. Please try again.';
-                spinner.hidden = true;
-                loginFormButton.hidden = false;
-                return null
-            }
-
-        }else{
-            console.log('Password input not found');
-            loadTooltip.innerText = 'Password input not found...';
-        }
-
-        // wait for main page redirection after login
-        loadTooltip.innerText = 'Redirecting to CSS portal...';
-        await page.waitForNavigation({'waitUntil':'domcontentloaded'});
-    }
-
-
-
-
-    loadTooltip.innerText = `Waiting for API response for ${date.day}/${date.month}/${date.year}...`;
-    await page.goto(`https://cssnew.synology.com/statistics/ticket/supAgentStatsByLevel?group=FR+Level+1&groupid=1000013&level=1&fromdate=${date.month}%2F${date.day}%2F${date.year}&todate=${date.month}%2F${date.day}%2F${date.year}`, {
-        timeout: 0
-    });
-
-    let responseString = await page.$eval('body > pre', el => el.innerText).catch(e => {
-        console.log('error getting response selector',e);
-        return null
-    });
-    
-    let response = await JSON.parse(responseString);
     let users = [];
     let formatResponse = response.agentdata.email_and_replycount;
     let workingCount = 0;
@@ -249,8 +140,8 @@ let start = async () => {
 }
 
 let getData = async () => {
-    credentials.username = document.getElementById('username').value;
-    credentials.password = document.getElementById('password').value;
+    // credentials.username = document.getElementById('username').value;
+    // credentials.password = document.getElementById('password').value;
 
     let dateArray = document.getElementById('date').value.split('-');
 
@@ -258,7 +149,7 @@ let getData = async () => {
     date.month = dateArray[1];
     date.day = dateArray[2];
     
-    console.log('data initialized', credentials.username);
+    console.log('data initialized');
 }
 
 let validateData = async () => {
@@ -269,12 +160,12 @@ let validateData = async () => {
         return false;
     }
 
-    if(credentials.username === '' || credentials.password === ''){
-        loadTooltip.innerText = 'Please enter a valid username/password to continue.';
-        spinner.hidden = true;
-        loginFormButton.hidden = false;
-        return false;
-    }
+    // if(credentials.username === '' || credentials.password === ''){
+    //     loadTooltip.innerText = 'Please enter a valid username/password to continue.';
+    //     spinner.hidden = true;
+    //     loginFormButton.hidden = false;
+    //     return false;
+    // }
 
     return true;
 }
