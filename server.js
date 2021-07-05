@@ -1,6 +1,7 @@
 const puppeteer = require('puppeteer');
 const open = require('open');
 const teams = require('modules/teams-fr.js');
+let users = [];
 
 let credentials = {username: '', password: ''};
 let date = {day: '', month: '', year: ''};
@@ -168,7 +169,7 @@ let start = async () => {
     });
     
     let response = await JSON.parse(responseString);
-    let users = [];
+
     let formatResponse = response.agentdata.email_and_replycount;
     let workingCount = 0;
 
@@ -234,9 +235,9 @@ let start = async () => {
     }
 
     // set suggested target, start from 1 to ignore FR Team user
+    let avg = (users[0].firstReply / workingCount).toFixed(2);
     for (let i = 1; i < users.length; i++) {
         if(users[i].firstReply > 3){
-            let avg = (users[0].firstReply / workingCount).toFixed(2);
             users[i].target =  avg > 15 ? 15 : avg;
         }else{
             users[i].target = 0;
@@ -396,13 +397,7 @@ const openMail = async () => {
     open('https://mailplus.synology.com/', {app: {name: 'firefox'}});
 };
 
-let render = (users) => {
-    let content = document.getElementById('render');
-
-    content.innerHTML = `
-        <button type="button" onclick="refresh()" class="uk-button uk-button-primary" style="margin-top: 20px">Change date</button>
-    `;
-
+const generateTableCode = () => {
     let tableTemplate = `
         <table style="border: 2px solid lightgray; border-collapse: collapse; overflow-wrap: break-word; width: 1005px; height: 470px; table-layout: fixed;">
             <colgroup class="" syno-mc-class="mce-col-group">
@@ -460,32 +455,67 @@ let render = (users) => {
     tableCode = tableCode.replace(/\</g, '&lt');
     tableCode = tableCode.replace(/\>/g, '&gt');
 
-    tableCode = `if(document.querySelector('#mceu_30')){
-                    document.querySelector('#mceu_30').firstElementChild.contentDocument.querySelector('#tinymce').innerHTML = \` 
-                    <div><br data-mce-bogus="1"></div>
-                    <div><br data-mce-bogus="1"></div>
-                    <div><br data-mce-bogus="1"></div>
-                    ${tableCode}
-                    <div><br data-mce-bogus="1"></div>
-                    <div><br data-mce-bogus="1"></div>
-                    <div><br data-mce-bogus="1"></div>
-                    \`;
-                }else{
-                    document.querySelector('#mceu_62').firstElementChild.contentDocument.querySelector('#tinymce').innerHTML = \` 
-                    <div><br data-mce-bogus="1"></div>
-                    <div><br data-mce-bogus="1"></div>
-                    <div><br data-mce-bogus="1"></div>
-                    ${tableCode}
-                    <div><br data-mce-bogus="1"></div>
-                    <div><br data-mce-bogus="1"></div>
-                    <div><br data-mce-bogus="1"></div>
-                    \`;
-                }
-        `;
+    return tableCode;
 
+};
+
+
+let render = (users) => {
+    let content = document.getElementById('render');
+
+    content.innerHTML = `
+        <button type="button" onclick="refresh()" class="uk-button uk-button-primary" style="margin-top: 20px">Change date</button>
+    `;
+
+    let tableCode = generateTableCode();
+    
+    
+    let code = `
+        <div><br data-mce-bogus="1"></div>
+
+        <b>[Target adjustment]</b>
+
+        <p>GB Cleaned at 4PM</p>
+        <p>Tickets received : ...</p>
+        <p>Members : ...</p>
+        <p>Adjustment : ...</p>
+        
+        <p>Members that didn't adjust the PB at 4PM : ...</p>
+
+
+        <p>Individual work -</p>
+        ${tableCode}
+
+        <p>Extra notes: ...</p>
+
+        <p>Team work  - GB Remains this morning - </p>
+
+        $///{teamTableCode}
+
+        [Staff]
+        ... are Off today
+        Manual dispatch in real time all day
+
+        <div><br data-mce-bogus="1"></div>
+        <div><br data-mce-bogus="1"></div>
+        <div><br data-mce-bogus="1"></div>
+    `;
+
+    let mailTemplate = `
+        if(document.querySelector('#mceu_30')){
+            document.querySelector('#mceu_30').firstElementChild.contentDocument.querySelector('#tinymce').innerHTML = \` 
+            ${code}
+            \`;
+        }else{
+            document.querySelector('#mceu_62').firstElementChild.contentDocument.querySelector('#tinymce').innerHTML = \` 
+            ${code}
+            \`;
+        }
+    `;
+    
     content.innerHTML += `
         <h1>Daily report preview for ${date.day}/${date.month}/${date.year}</h1>
-        <div class="margin-center">${tableTemplate}</div>
+        <div class="margin-center">${tableCode}</div>
 
         <h1>Table code</h1>
         <button type="button" onclick="copyCode()" class="uk-button uk-button-primary">Copy code</button>
@@ -503,7 +533,7 @@ let render = (users) => {
         </ul>
 
 
-        <textarea id='table-code' hidden>${tableCode}</textarea>
+        <textarea id='table-code' hidden>${mailTemplate}</textarea>
     `;
 
     
