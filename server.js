@@ -57,6 +57,9 @@ let loginForm = document.getElementById('login');
 // start login
 let start = async () => {
     console.log('run');
+    
+    // reset the users values for new run
+    users = []
 
     await getData();
     
@@ -296,9 +299,9 @@ let refresh = () => {
 }
 
 let copyCode = () => {
-    let tableCopy = document.getElementById('table-code');
+    let el = document.getElementById('table-code');
     var clipboard = nw.Clipboard.get();
-    clipboard.set(tableCopy.value, 'text');
+    clipboard.set(el.innerHTML, 'html');
     alert("Copied!");
 }
 
@@ -389,9 +392,9 @@ let copyCode = () => {
 
 const openMail = async () => {
     // copy then add window with mailplus
-    let tableCopy = document.getElementById('table-code');
+    let el = document.getElementById('table-code');
     var clipboard = nw.Clipboard.get();
-    clipboard.set(tableCopy.value, 'text');
+    clipboard.set(el.innerHTML, 'html');
 
     // open('https://mailplus.synology.com/');
     open('https://mailplus.synology.com/', {app: {name: 'firefox'}});
@@ -468,7 +471,9 @@ let render = (users) => {
     `;
 
     let table = generateTableCode();
-    
+
+    // TODO: create function to generate team performance table
+    let teamTableCode = "";
     
     let code = `
         <div><br data-mce-bogus="1"></div>
@@ -484,13 +489,13 @@ let render = (users) => {
 
 
         <p>Individual work -</p>
-        ${table.tableCode}
+        ${table.tableTemplate}
 
         <p>Extra notes: ...</p>
 
         <p>Team work  - GB Remains this morning - </p>
 
-        $///{teamTableCode}
+        ${teamTableCode}
 
         [Staff]
         ... are Off today
@@ -499,18 +504,6 @@ let render = (users) => {
         <div><br data-mce-bogus="1"></div>
         <div><br data-mce-bogus="1"></div>
         <div><br data-mce-bogus="1"></div>
-    `;
-
-    let mailTemplate = `
-        if(document.querySelector('#mceu_30')){
-            document.querySelector('#mceu_30').firstElementChild.contentDocument.querySelector('#tinymce').innerHTML = \` 
-            ${code}
-            \`;
-        }else{
-            document.querySelector('#mceu_62').firstElementChild.contentDocument.querySelector('#tinymce').innerHTML = \` 
-            ${code}
-            \`;
-        }
     `;
     
     content.innerHTML += `
@@ -533,7 +526,7 @@ let render = (users) => {
         </ul>
 
 
-        <textarea id='table-code' hidden>${mailTemplate}</textarea>
+        <div id='table-code' hidden>${code}</div>
     `;
 
     
