@@ -455,7 +455,7 @@ const generateTableCode = () => {
     tableCode = tableCode.replace(/\</g, '&lt');
     tableCode = tableCode.replace(/\>/g, '&gt');
 
-    return tableCode;
+    return {tableCode, tableTemplate};
 
 };
 
@@ -467,7 +467,7 @@ let render = (users) => {
         <button type="button" onclick="refresh()" class="uk-button uk-button-primary" style="margin-top: 20px">Change date</button>
     `;
 
-    let tableCode = generateTableCode();
+    let table = generateTableCode();
     
     
     let code = `
@@ -484,7 +484,7 @@ let render = (users) => {
 
 
         <p>Individual work -</p>
-        ${tableCode}
+        ${table.tableCode}
 
         <p>Extra notes: ...</p>
 
@@ -515,7 +515,7 @@ let render = (users) => {
     
     content.innerHTML += `
         <h1>Daily report preview for ${date.day}/${date.month}/${date.year}</h1>
-        <div class="margin-center">${tableCode}</div>
+        <div class="margin-center" id="table">${table.tableTemplate}</div>
 
         <h1>Table code</h1>
         <button type="button" onclick="copyCode()" class="uk-button uk-button-primary">Copy code</button>
@@ -526,7 +526,7 @@ let render = (users) => {
                 <a class="uk-accordion-title" href="#">See code</a>
                 <div class="uk-accordion-content">
                     <pre>
-                        <code>${tableCode}</code>
+                        <code>${table.tableCode}</code>
                     </pre>
                 </div>
             </li>
